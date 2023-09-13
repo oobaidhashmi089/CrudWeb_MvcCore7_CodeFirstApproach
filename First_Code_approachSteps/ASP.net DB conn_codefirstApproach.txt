@@ -1,0 +1,74 @@
+Step#1 
+Install 3 packages in your ASP.netCore MVC APPLICATION
+1. Microsoft.EntityFrameworkCore.SqlServer
+2. Microsoft.EntityFrameworkCore.Tools	
+3. Microsoft.EntityFrameworkCore.Design
+...............................................................................................
+Step#2
+Create Model Class>>
+[   public class Student
+    {
+        [Key]
+        public int  Id { get; set; }
+
+        [Column("StudentName",TypeName ="Varchar(100)")]
+        public String Name { get; set; }
+        [Column("Gender", TypeName = "Varchar(20)")]
+        public String  Gender { get; set; }
+        [Column("Batch", TypeName = "Varchar(100)")]
+        public String Batch { get; set; }
+    }]
+Create DbContextClass
+[
+    public class StudentDBContext: DbContext
+    {
+        public StudentDBContext(DbContextOptions options) : base(options)
+        {
+
+        }
+        public DbSet<Student> students { get; set; }
+    }]
+...............................................................................................
+Step#3
+Create a Connection String in appsettigs.jsonFile>>
+  "ConnectionStrings": {
+    "dbcs": "Server =DESKTOP-94SEOUP;Database= CrudEDB;Trusted_Connection=True;TrustServerCertificate=True"
+  }
+...............................................................................................
+Step#4 
+Registering Connection String in Program.CS File>>
+
+builder.Services.AddControllersWithViews();//This one is already in Program.cs
+
+var provider = builder.Services.BuildServiceProvider();
+var config= provider.GetRequiredService<IConfiguration>();
+builder.Services.AddDbContext<StudentDBContext>(item => item.UseSqlServer(config.GetConnectionString("dbcs")));
+    
+var app = builder.Build();//This one is already in Program.cs
+....................OR.............................................
+var builder = WebApplication.CreateBuilder(args);
+// Configure application settings
+builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
+// Add services to the container.
+builder.Services.AddControllersWithViews();
+
+// Configure DbContext
+builder.Services.AddDbContext<EmployeeDBcontext>(options =>
+   options.UseSqlServer(builder.Configuration.GetConnectionString("dbcs")));
+
+var app = builder.Build();
+...............................................................................................
+
+Step #5 
+Add a migration and run the migration>>
+
+//Add migration
+PM> add-migration CrudWebAppDB
+
+//Run migration
+PM> update-database
+
+ 
